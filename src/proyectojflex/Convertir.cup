@@ -1,0 +1,125 @@
+/*­­­­Sección de declaraciones package e imports­­­­­­­­­*/
+//Paquete al cual pertenece el archivo
+package proyectojflex;
+
+//Importaciones de la libreria cup de java
+import java_cup.runtime.*;
+/*­­­­ Sección componentes de código de usuario ­­­­*/
+
+//inicia el codigo parser
+parser code {:
+    String salida="";
+/*El metodo nos servira para capturar errores de sintaxis*/
+    public void report_error(String mensaje, Object info) {
+
+//Se creara esta variable para poder presentar un mensaje de error
+       	StringBuffer m = new StringBuffer("Error");
+
+//Esta línea nos sirve para presentar el mensaje de error
+		//System.out.println("Mensaje: "+mensaje);
+
+/*En esta linea se presentara el numero del token 
+   en el cual se presenta el error*/
+		//System.out.println("info: "+info.toString());
+
+/*Convertiremos, a caracter, el numero del token que bota el error
+  para poder dar un mensaje mas específico sobre el mismo.*/
+char a=info.toString().charAt(1);
+
+/*Esta estructura switch nos permitira dar un mensaje particular 
+  para cada tipo de error encontrado en la sintaxis.*/
+                switch (a){
+
+                    case '1':
+                        salida="Error SINTACTICO";
+                        break;
+                // Si el error se presente en el token LETRA
+                    case '2': 
+                        salida= " Letra no corresponde";
+                        break;
+                // Si el error se presente en el token SUMA
+                    case '3': 
+                        salida= " el operador '+' no es correcto";
+                        break;
+
+                // Si el error se presente en el token CONVERTIR
+                    case '4': 
+                        salida= " el operador '>'  no es correcto";
+                        break;
+
+                // Si el error se presente en el la finalización del archivo
+                    case '0': 
+                        salida= "error de caracter en el archivo ";
+                        break;
+                //En caso de que se presente un errror no esperado        
+                    default:
+                        System.out.println(a);
+                        salida="error en su sintaxis, por favor verifique";
+                        break;
+                }
+
+	//Verifica si la variable info (del error) es una instancia de Symbol
+        if(info instanceof java_cup.runtime.Symbol) {
+						
+                    //Se crea una Variable de tipo Symbol que almacenará el info
+                    java_cup.runtime.Symbol s =((java_cup.runtime.Symbol)info);
+			/* Comprueba si el numero de línea es mayor o igual que cero */
+			if (s.left >= 0) {
+                m.append(" en linea " + (s.left + 1));
+                /*Comprueba si el numero de columna es mayoro igual que cero */
+                if (s.right >= 0) {
+                    m.append(", y columna " + (s.right + 1));
+                }
+              }
+            //Se establece cual sera el mensaje de error
+                m.append(salida+" : "+mensaje);
+
+	    //se presenta el mensjae de error	
+            System.err.println(m);
+        }
+}
+    /*Captura errores que son criticos para el compilador*/
+    public void report_fatal_error(String message, Object info) {
+       	System.out.println("ERROR: se ha ingresado un valor que no corresponde");
+       	report_error(message, info);
+
+            //Termina la ejecución del compilador en caso de error
+		System.exit(1);
+    }
+
+/*Metodo para la conversión de la letra que es recibida como parametro*/
+public void convertir_ac(String a){
+
+                /*Se crea una variable tipo caracter dond se almacena 
+                  la letra a convertir*/
+		  char leer = a.charAt(0);
+
+                /*Se crea una variable tipo int y al caracter lo transformamos a
+                  entero y le restamos 32(la diferencia nuemrica entre 
+                  mayusculas y minusculas)*/
+		   int valor =(int)leer-32;
+
+//Presentamos la letra convertida
+System.out.println("La letra convertida a mayuscula es: "+(char)valor+"");
+}
+:};
+/*­­­ Declaración de las variables de la gramática ­­­­­*/
+
+/*Se declara las variables terminal que usaremos en nuestro compilador*/
+terminal ALFA, SUMA, CONVERTIR;
+
+/*Declararemos los non terminal de nuestro compilador las mismas que deben ser 
+  definidas en la parte de la gramática*/
+non terminal linea, sentencia;
+
+/*Declaración que nuestra regla gramatical está compuesta por una línea 
+    y la línea por una sentencia.*/
+linea ::= sentencia;
+
+/*Declaración que la sentencia debe estar compuesta por una LETRA el operador SUMA
+ y el operador CONVERTIR en ese orden, se obtiene una variable de el token LETRA
+ y se llama al método para su conversión*/
+sentencia ::= ALFA:f SUMA CONVERTIR{:parser.convertir_ac(f.toString()); :};
+
+
+
